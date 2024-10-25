@@ -1,0 +1,172 @@
+import React, { useEffect, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import API_BASE_URL from "../../config";
+import axios from "axios";
+
+const EditUser = () => {
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const initialInputs = {
+    name: "",
+    surname:"",
+    email: "",
+    password: "",
+    role:" "
+  };
+
+  const [inputs, setInputs] = useState(initialInputs);
+  const [err, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const response = await axios.get(`${API_BASE_URL}/api/user/getOneUserData/${id}`);
+        const userData = response.data[0]; // Access the first element in the array
+        console.log("Fetched User Data:", userData);
+  
+        setInputs({
+          name: userData.name,
+          surname: userData.surname,
+          email: userData.email,
+          role: userData.role,
+        });
+      } catch (err) {
+        console.error(err);
+        setError(err.response);
+        toast.error("Failed to fetch user details");
+      }
+    };
+  
+    fetchUser();
+  }, [id]);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setInputs((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await axios.put(`${API_BASE_URL}/api/user/editUser/${id}`, inputs);
+      setInputs(initialInputs);
+      toast.success("User updated successfully");
+      navigate("/user");
+    } catch (err) {
+      console.error(err);
+      setError(err.response);
+      toast.error("Failed to update user");
+    }
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          Edit User
+        </h2>
+      </div>
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
+          <form className="space-y-6">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                {renderInput("name", "Name", "Enter your Name",true)}
+              </div>
+              <div>
+                {renderInput("surname", "Surname", "surname",true)}
+              </div>
+              <div>
+                {renderInput("email", "Email", "Enter your E-mail")}
+              </div>
+              <div>
+                {renderInput("password", "Password", "Enter your Password")}
+              </div>
+              <div>
+                {renderSelect("role", "Role", [
+                    { value: "admin", name: "Admin" },
+                    { value: "moderator", name: "Moderator" },
+                    { value: "user", name: "user" },
+                  ])}
+              </div>
+            </div>
+            <div className="flex justify-between items-center mt-4">
+              {renderButton("Update")}
+              <Link to="/user">
+                {renderButton("Back")}
+              </Link>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+
+  function renderInput(name, label, placeholder,readOnly=false) {
+    return (
+      <>
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+          {label}
+        </label>
+        <div className="mt-1">
+          <input
+            type={name === 'password' ? 'password' : 'text'} // Set type to 'password' for the password field
+            name={name}
+            autoComplete={name}
+            readOnly={readOnly}
+            required
+            onChange={handleChange}
+            placeholder={placeholder}
+            value={inputs[name]}
+            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          />
+        </div>
+      </>
+    );
+  }
+
+  function renderSelect(name, label, options) {
+    return (
+      <>
+        <label
+          htmlFor={name}
+          className="block text-sm font-medium text-gray-700"
+        >
+          {label}
+        </label>
+        <div className="mt-1 relative">
+          <select
+            name={name}
+            onChange={handleChange}
+            value={inputs[name]}
+            className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+          >
+            <option value="" label="Select an option" disabled />
+            {options.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </>
+    );
+  }
+
+  function renderButton(label) {
+    return (
+      <button
+        onClick={label === "Update" ? handleSubmit : undefined}
+        className="group relative w-[100px] h-[40px] flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+      >
+        {label}
+      </button>
+    );
+  }
+};
+
+export default EditUser;
