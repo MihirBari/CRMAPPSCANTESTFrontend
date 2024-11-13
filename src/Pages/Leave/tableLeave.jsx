@@ -44,6 +44,12 @@ const Users = () => {
           {
             role: currentUser.role,
             id: currentUser.id,
+            team: currentUser.team,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`,
+            }
           }
         );
         setUsers(response.data.dealers);
@@ -60,7 +66,10 @@ const Users = () => {
 
   const handleDeleteConfirmation = (itemId) => {
     axios
-      .delete(`${API_BASE_URL}/api/Leave/deleteApplication`, { data: { id: itemId } })
+      .delete(`${API_BASE_URL}/api/Leave/deleteApplication`, { data: { id: itemId },
+        headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        } })
       .then((response) => {
         console.log("Delete successful:", response.data);
         toast.success("Deleted Successfully");
@@ -97,7 +106,12 @@ const Users = () => {
       cell: (row) => (
         <span
           className="view-link"
-          onClick={() => handleViewClicked(row.id)}
+          onClick={
+            currentUser.role === "admin" || 
+            (currentUser.name === row.name && currentUser.surname === row.surname)
+              ? () => handleViewClicked(row.id)
+              : null
+          }
           style={{ cursor: "pointer", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "flex-start" }}
         >
           {row.id}
@@ -111,7 +125,12 @@ const Users = () => {
       cell: (row) => (
         <span
           className="view-link"
-          onClick={() => handleViewClicked(row.id)}
+          onClick={
+            currentUser.role === "admin" || 
+            (currentUser.name === row.name && currentUser.surname === row.surname)
+              ? () => handleViewClicked(row.id)
+              : null
+          }
           style={{ cursor: "pointer", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "flex-start" }}
         >
           {row.name}
@@ -125,7 +144,12 @@ const Users = () => {
       cell: (row) => (
         <span
           className="view-link"
-          onClick={() => handleViewClicked(row.id)}
+          onClick={
+            currentUser.role === "admin" || 
+            (currentUser.name === row.name && currentUser.surname === row.surname)
+              ? () => handleViewClicked(row.id)
+              : null
+          }
           style={{ cursor: "pointer", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "flex-start" }}
         >
           {row.surname}
@@ -140,7 +164,12 @@ const Users = () => {
       cell: (row) => (
         <span
           className="view-link"
-          onClick={() => handleViewClicked(row.id)}
+          onClick={
+            currentUser.role === "admin" || 
+            (currentUser.name === row.name && currentUser.surname === row.surname)
+              ? () => handleViewClicked(row.id)
+              : null
+          }
           style={{ cursor: "pointer", width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "flex-start" }}
         >
           {row.status}

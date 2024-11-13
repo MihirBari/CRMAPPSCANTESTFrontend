@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import { Loader } from "../loader";
+import { AuthContext } from "../../context/AuthContext";
 
 const OpportunityDetails = ({customer_entity}) => {
   const [users, setUsers] = useState([]);
@@ -35,13 +36,17 @@ const OpportunityDetails = ({customer_entity}) => {
       timeZone: "IST",
     });
   };
-  
+  const { currentUser } = useContext(AuthContext);
   useEffect(() => {
     const fetchOpportunities = async () => {
       try {
         const response = await axios.get(
           `${API_BASE_URL}/api/Contact/showCustomerOpportunity/${customer_entity}`,
-         
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            }
+          }
         );
         setUsers(response.data.products);
         const initialAggregates = calculateAggregates(response.data.products);

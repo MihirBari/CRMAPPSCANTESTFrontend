@@ -47,6 +47,9 @@ const LeaveTable = () => {
             role: currentUser.role,
             id: currentUser.id,
             signal: signal,
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`,
+            }
           }
         );
         // Check for 'dealers' in response data
@@ -80,7 +83,11 @@ const LeaveTable = () => {
 
   const handleDeleteConfirmation = (itemId) => {
     axios
-      .delete(`${API_BASE_URL}/api/Leave/deleteApplication`, { data: { id: itemId } })
+      .delete(`${API_BASE_URL}/api/Leave/deleteApplication`, { data: { id: itemId },
+        headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        }
+      })
       .then((response) => {
         console.log("Delete successful:", response.data);
         toast.success("Deleted Successfully");

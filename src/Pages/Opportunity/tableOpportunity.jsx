@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import "./orders.css";
 import DataTable, { createTheme } from "react-data-table-component";
 import API_BASE_URL from "../../config";
@@ -11,6 +11,7 @@ import FilterModal from "./FilterModal";
 import ExportTable from "./ExportTable";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog.jsx";
 import { PiExportBold } from "react-icons/pi";
+import { AuthContext } from "../../context/AuthContext.jsx";
 
 const TableOpportunity = () => {
   const [users, setUsers] = useState([]);
@@ -33,6 +34,8 @@ const TableOpportunity = () => {
     licenseTo: "",
   });
 
+  const { currentUser } = useContext(AuthContext);
+
   const handleCiFilterClick = () => {
     setFilterModalIsOpen(true);
   };
@@ -51,6 +54,7 @@ const TableOpportunity = () => {
       data: { id: itemId }, // Include only the ID in the request payload
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${currentUser.accessToken}`,
       },
     })
       .then((response) => {
@@ -77,6 +81,9 @@ const TableOpportunity = () => {
         const response = await axios.get(
           `${API_BASE_URL}/api/Opportunity/showOpportunity`,
           {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            },
             params: filters, 
             signal: signal, 
           }
@@ -381,8 +388,7 @@ const TableOpportunity = () => {
         columns={modifiedColumns}
         data={filteredUsers}
         customStyles={customStyles}
-        fixedHeader
-        fixedHeaderScrollHeight="350px"
+        
         striped
         theme="solarized"
         pagination

@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import FilterModal from "./FilterModal";
 import { CiFilter } from "react-icons/ci";
 import ExportTable from "./ExportTable";
 import { Loader } from "../loader";
+import { AuthContext } from "../../context/AuthContext";
 
 const Main = () => {
   const [filterModalIsOpen, setFilterModalIsOpen] = useState(false);
@@ -51,13 +52,20 @@ const Main = () => {
     setFilterModalIsOpen(true);
   };
 
+  const { currentUser } = useContext(AuthContext);
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
     const fetchOpportunities = async () => {
       try {
         const response = await axios.get(
           `${API_BASE_URL}/api/Opportunity/showOpportunity`,
           {
+            signal: signal,
             params: filters,
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`,
+            }
           }
         );
         setUsers(response.data.products);
@@ -69,6 +77,9 @@ const Main = () => {
         console.error("Error fetching opportunities:", err);
         setLoading(false);
       }
+      return () => {
+        controller.abort(); // Cancel the request if the component unmounts
+      };
     };
 
     fetchOpportunities();
@@ -147,15 +158,15 @@ const Main = () => {
           <table className="table-auto" style={{ width: "100%" }}>
             <tbody>
               <tr style={{ textAlign: "center" }}>
-                <th className="px-4 py-2">Total Entity</th>
-                <th className="px-4 py-2">Total Type</th>
-                <th className="px-4 py-2">Total License Type</th>
+                <th className="px-4 py-2">Total Customer</th>
+                <th className="px-4 py-2">Total Licenses</th>
+                {/* <th className="px-4 py-2">Total License Type</th> */}
                 <th className="px-4 py-2">Total Value</th>
               </tr>
               <tr style={{ textAlign: "center" }}>
                 <td className="border px-4 py-2">{aggregates.TotalEntity}</td>
                 <td className="border px-4 py-2">{aggregates.TotalType}</td>
-                <td className="border px-4 py-2">{aggregates.TotalLicenseType}</td>
+                {/* <td className="border px-4 py-2">{aggregates.TotalLicenseType}</td> */}
                 <td className="border px-4 py-2">{formatIndianNumber(aggregates.TotalValue)}</td>
               </tr>
             </tbody>

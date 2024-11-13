@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { MdEdit, MdDelete } from "react-icons/md";
 import AddContact from "../Contact/AddContact";
 import axios from "axios";
@@ -10,6 +10,7 @@ import EditContact from "../Contact/editContact";
 import FilterModal from "../Contact/filterModalContact";
 import { CiFilter } from "react-icons/ci";
 import OpportunityDetails from "../Contact/opportunityDetails";
+import { AuthContext } from "../../context/AuthContext";
 
 const CustomerDetailVeiw = () => {
   const [addContactIsOpen, setAddContactIsOpen] = useState(false);
@@ -27,6 +28,7 @@ const CustomerDetailVeiw = () => {
   });
 
   const { customer_entity,id } = useParams();
+  const { currentUser } = useContext(AuthContext);
 
   const handleAddClick = () => {
     setAddContactIsOpen(true);
@@ -40,7 +42,11 @@ const CustomerDetailVeiw = () => {
   const handleDeleteConfirmation = (itemId) => {
     axios
       .delete(`${API_BASE_URL}/api/Contact/deleteContact`, {
-        data: { id: itemId },
+        
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`
+          },
+        data: { id: itemId }
       })
       .then((response) => {
         console.log("Delete successful:", response.data);
@@ -80,7 +86,11 @@ const CustomerDetailVeiw = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/Contact/showContact/${customer_entity}`
+          `${API_BASE_URL}/api/Contact/showContact/${customer_entity}`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            }}
         );
         setCustomers(response.data.products);
         setFilteredUsers(response.data.products);

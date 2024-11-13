@@ -29,7 +29,11 @@ export const EditLeaveModal = ({ isOpen, onClose, id }) => {
     // Fetch holidays from the backend
     const fetchHolidays = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/Holiday/holidays`);
+        const response = await axios.get(`${API_BASE_URL}/api/Holiday/holidays`,
+          { headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          }}
+        );
         const formattedHolidays = response.data.map((holiday) => holiday.date.split("T")[0]);
         setHolidays(formattedHolidays);
         console.log("Holidays:", formattedHolidays);
@@ -77,7 +81,10 @@ export const EditLeaveModal = ({ isOpen, onClose, id }) => {
     const fetchSeller = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/Leave/showOneApplicationLeave/${id}`
+          `${API_BASE_URL}/api/Leave/showOneApplicationLeave/${id}`,
+          { headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          }}
         );
         const sellerData = response.data[0];
         console.log("Seller Data:", sellerData);
@@ -129,7 +136,10 @@ export const EditLeaveModal = ({ isOpen, onClose, id }) => {
     try {
       await axios.put(
         `${API_BASE_URL}/api/Leave/editApplicationAdmin/${id}`,
-        updatedInputs
+        updatedInputs,
+        { headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        }}
       );
       setInputs(initialInputs);
       toast.success("Updated successfully");
@@ -149,7 +159,7 @@ export const EditLeaveModal = ({ isOpen, onClose, id }) => {
     isDisabled = false
   ) => {
     const isEditableByUser =
-      currentUser.role === "user" || currentUser.role === "moderator";
+      currentUser.role === "user" || currentUser.role === "moderator" || currentUser.role === "Ro-User";
     const isEditable = isEditableByUser && !isDisabled;
 
     // Render toDate input only if duration is "Full Day"
@@ -190,7 +200,7 @@ export const EditLeaveModal = ({ isOpen, onClose, id }) => {
     isDisabled = false
   ) => {
     const isEditableByUser =
-      currentUser.role === "user" || currentUser.role === "moderator";
+      currentUser.role === "user" || currentUser.role === "moderator" || currentUser.role === "Ro-User";
     const isEditable = isEditableByUser && !isDisabled;
 
     return (
@@ -219,7 +229,7 @@ export const EditLeaveModal = ({ isOpen, onClose, id }) => {
 
   const renderSelect = (name, label, options, isDisabled = false) => {
     const isEditableByUser =
-      currentUser.role === "user" || currentUser.role === "moderator";
+      currentUser.role === "user" || currentUser.role === "moderator" || currentUser.role === "Ro-User";
     const isEditable = isEditableByUser && !isDisabled;
 
     return (

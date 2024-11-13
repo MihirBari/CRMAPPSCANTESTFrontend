@@ -30,12 +30,13 @@ const Main = () => {
     formData.append('file', file);
 
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/Holiday/holiday`, formData, {
+    await axios.post(`${API_BASE_URL}/api/Holiday/holiday`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${currentUser.accessToken}`
         }
       });
-      console.log('File uploaded successfully:', response.data);
+     // console.log('File uploaded successfully:', response.data);
       fetchHolidays();
     } catch (error) {
       console.error('Error uploading file:', error);
@@ -44,9 +45,15 @@ const Main = () => {
 
   const fetchHolidays = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/Holiday/holidays`);
+      const response = await axios.get(`${API_BASE_URL}/api/Holiday/holidays`,
+        {
+          headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`
+          }
+        }
+      );
       setHolidays(response.data);
-      console.log(response.data)
+      
     } catch (error) {
       console.error('Error fetching holidays:', error);
     }
@@ -54,7 +61,13 @@ const Main = () => {
 
   const fetchBirthdays = async () => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/Holiday/birthday`);
+      const response = await axios.get(`${API_BASE_URL}/api/Holiday/birthday`,
+        {
+          headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`
+          }
+        }
+      );
       setBirthdays(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error('Error fetching birthdays:', error);

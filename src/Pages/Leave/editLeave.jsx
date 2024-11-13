@@ -58,7 +58,11 @@ const EditLeave = () => {
     const fetchSeller = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/Leave/showOneApplicationLeave/${id}`
+          `${API_BASE_URL}/api/Leave/showOneApplicationLeave/${id}`,
+          { headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          }}
+          
         );
         const sellerData = response.data[0];
         console.log("Seller Data:", sellerData);
@@ -106,7 +110,10 @@ const EditLeave = () => {
     try {
       await axios.put(
         `${API_BASE_URL}/api/Leave/editApplicationAdmin/${id}`,
-        updatedInputs
+        updatedInputs,
+        { headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        }}
       );
       setInputs(initialInputs);
       toast.success("Updated successfully");
@@ -125,7 +132,7 @@ const EditLeave = () => {
     isDisabled = false
   ) => {
     const isEditableByUser =
-      currentUser.role === "user" || currentUser.role === "moderator";
+      currentUser.role === "user" || currentUser.role === "moderator" || currentUser.role === "Ro-User";
     const isEditable = isEditableByUser && !isDisabled;
 
     // Render toDate input only if duration is "Full Day"
@@ -166,7 +173,7 @@ const EditLeave = () => {
     isDisabled = false
   ) => {
     const isEditableByUser =
-      currentUser.role === "user" || currentUser.role === "moderator";
+      currentUser.role === "user" || currentUser.role === "moderator" || currentUser.role === "Ro-User";
     const isEditable = isEditableByUser && !isDisabled;
 
     return (
@@ -195,7 +202,7 @@ const EditLeave = () => {
 
   const renderSelect = (name, label, options, isDisabled = false) => {
     const isEditableByUser =
-      currentUser.role === "user" || currentUser.role === "moderator";
+      currentUser.role === "user" || currentUser.role === "moderator" || currentUser.role === "Ro-User";
     const isEditable = isEditableByUser && !isDisabled;
 
     return (

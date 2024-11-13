@@ -1,17 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useParams } from 'react-router-dom';
 import SideNavBar from '../Sidebar/Navbar';
 import ExpenseDetails from './ExpenseDetails';
 import axios from 'axios';
 import API_BASE_URL from "../../config";
+import { AuthContext } from '../../context/AuthContext';
 
 const ViewCustomer = () => {
   const { id } = useParams(); 
   const [product, setProduct] = useState(null);
+  const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchData = () => {
-      axios.get(`${API_BASE_URL}/api/Contact/showOneCustomer/${id}`)
+      axios.get(`${API_BASE_URL}/api/Contact/showOneCustomer/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`
+          }
+        }
+      )
         .then(response => {
           console.log('API Response:', response.data);
           setProduct(response.data);

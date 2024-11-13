@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import API_BASE_URL from "../../config";
 import axios from "axios";
+import Select from "react-select";
 import { useNavigate, useParams } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 const EditEmployes = () => {
   const initialInputs = {
@@ -14,9 +16,10 @@ const EditEmployes = () => {
     last_date: "",
     status: "Active", // Defaulting to Active
     DOB: "",
+    team:"",
     personal_email: "",
   };
-
+  const { currentUser } = useContext(AuthContext);
   const { id } = useParams();
   const [inputs, setInputs] = useState(initialInputs);
   const [err, setError] = useState(null);
@@ -31,10 +34,21 @@ const EditEmployes = () => {
     }));
   };
 
+  const teamOptions = [
+    { value: "BigFix", label: "BigFix" },
+    { value: "SolarWinds", label: "SolarWinds" },
+    { value: "Armis", label: "Armis" },
+    { value: "Tenable", label: "Tenable" },
+  ];
+
   useEffect(() => {
     const fetchEmployee = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/Employes/viewEmployes/${id}`);
+        const response = await axios.get(`${API_BASE_URL}/api/Employes/viewEmployes/${id}`,
+          {headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          }}
+        );
         const employeeData = response.data[0];
         if (employeeData) {
           setInputs({
@@ -46,6 +60,7 @@ const EditEmployes = () => {
             last_date: formatDate(employeeData.last_date) || "",
             status: employeeData.status || "Active",
             DOB: formatDate(employeeData.DOB) || "",
+            team: employeeData.team || "",
             personal_email: employeeData.personal_email || "",
           });
         } else {
@@ -86,7 +101,11 @@ const EditEmployes = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${API_BASE_URL}/api/Employes/editEmployes/${id}`, inputs);
+      await axios.put(`${API_BASE_URL}/api/Employes/editEmployes/${id}`, inputs,
+        {headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        }}
+      );
       toast.success("Employee updated successfully");
       navigate("/Employees");
     } catch (err) {
@@ -99,7 +118,12 @@ const EditEmployes = () => {
     navigate("/Employees");
   };
 
-
+  const handleTeamChange = (selectedOptions) => {
+    setInputs((prev) => ({
+      ...prev,
+      team: selectedOptions ? selectedOptions.map(option => option.value) : [],
+    }));
+  };
 
   return (
     <div>
@@ -134,6 +158,20 @@ const EditEmployes = () => {
                 </select>
               </div>
               {renderInput("DOB", "Date of Birth", "date","date")}
+              <div className="col-span-2">
+                <label htmlFor="team" className="block text-sm font-medium text-gray-700">
+                  Team
+                </label>
+                <Select
+                  isMulti
+                  name="team"
+                  options={teamOptions}
+                  className="basic-multi-select"
+                  classNamePrefix="select"
+                  value={teamOptions.filter(option => inputs.team.includes(option.value))}
+                  onChange={handleTeamChange}
+                />
+              </div>
               {renderInput("personal_email", "Personal Email", "Employee's Personal Email")}
             </div>
             <div className="flex justify-between items-center mt-4">
@@ -177,6 +215,8 @@ const EditEmployes = () => {
       </div>
     );
   }
+
 };
+
 
 export default EditEmployes;

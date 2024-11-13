@@ -24,7 +24,12 @@ const MobileDetail = ({ product }) => {
   const fetchProductData = async (id) => {
     try {
       const response = await axios.get(
-        `${API_BASE_URL}/api/Leave/showOneApplicationLeave/${id}`
+        `${API_BASE_URL}/api/Leave/showOneApplicationLeave/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          }
+        }
       );
       setEditProduct(response.data);
       //console.log(response.data);

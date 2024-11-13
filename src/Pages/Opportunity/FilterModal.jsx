@@ -1,8 +1,9 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Modal from "react-modal";
 import Select from "react-select";
 import API_BASE_URL from "../../config";
+import { AuthContext } from "../../context/AuthContext";
 
 Modal.setAppElement("#root");
 
@@ -23,13 +24,19 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
   const [endDate, setEndDate] = useState(null);
   const [shouldApplyFilters, setShouldApplyFilters] = useState(false);
 
+  const { currentUser } = useContext(AuthContext);
+
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
-    
+
     const fetchCustomerEntities = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/Contact/customerentity`, { signal });
+        const response = await axios.get(`${API_BASE_URL}/api/Contact/customerentity`, {
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`
+          },
+         signal });
         setAllCustomerEntities(response.data);
       } catch (err) {
         if (axios.isCancel(err)) {
@@ -42,7 +49,12 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
 
     const fetchTypeOptions = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/Opportunity/product`);
+        const response = await axios.get(`${API_BASE_URL}/api/Opportunity/product`,
+           {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            } }
+        );
         setType(response.data);
       } catch (error) {
         console.error("Error fetching type options:", error);
@@ -74,6 +86,9 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
           startDate: dateFilterType === "between" ? startDate : null,
           endDate: dateFilterType === "between" ? endDate : null,
         },
+        headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`
+          }
       });
       onApplyFilters(response.data.products);
       localStorage.setItem(

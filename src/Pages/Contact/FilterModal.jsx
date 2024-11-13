@@ -1,29 +1,41 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import Select from "react-select";
+import { AuthContext } from "../../context/AuthContext";
+
 Modal.setAppElement("#root");
+
 const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
   const [city, setCity] = useState([]);
   const [cityOptions, setCityOptions] = useState([]);
   const [customerEntity, setCustomerEntity] = useState([]);
   const [customerEntityOptions, setCustomerEntityOptions] = useState([]);
   const [shouldApplyFilters, setShouldApplyFilters] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(null);
+
+  const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
 
+
     const fetchCityOptions = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/contact/city`);
-        console.log("City Response:", response.data); // Log response data
+        const response = await axios.get(`${API_BASE_URL}/api/contact/city`, {   headers: {
+             Authorization: `Bearer ${currentUser.accessToken}`
+        },signal });
         setCityOptions(
           response.data.map((city) => ({ value: city.city, label: city.city }))
         );
       } catch (error) {
-        console.error("Error fetching city options:", error.message);
+        if (axios.isCancel(error)) {
+          console.log("Request canceled", error.message);
+        } else {
+          setErrorMessage("Error fetching city options.");
+        }
       }
     };
 
@@ -31,10 +43,12 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
 
     const fetchCustomerEntities = async () => {
       try {
-        const response = await axios.get(
-          `${API_BASE_URL}/api/Contact/customerentity`,
-          { signal: signal }
-        );
+        const response = await axios.get(`${API_BASE_URL}/api/Contact/customerentity`, {
+          headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+          },
+          signal
+        });
         setCustomerEntityOptions(
           response.data.map((entity) => ({
             value: entity.customer_entity,
@@ -45,10 +59,11 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
         if (axios.isCancel(err)) {
           console.log("Request canceled", err.message);
         } else {
-          console.error("Error fetching customer entities:", err);
+          setErrorMessage("Error fetching customer entities.");
         }
       }
     };
+
     fetchCustomerEntities();
 
     return () => {
@@ -58,17 +73,22 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
 
   const applyFilters = async () => {
     try {
-      const response = await axios.get(
-        `${API_BASE_URL}/api/contact/showCustomer`,
-        {
-          params: {
-            city: city.map((c) => c.value),
-            customerEntity,
-          },
-        }
-      );
+      const params = {};
+      if (city.length > 0) {
+        params.city = city.map((c) => c.value);
+      }
+      if (customerEntity.length > 0) {
+        params.customerEntity = customerEntity;
+      }
 
-      onApplyFilters(response.data.products);
+      const response = await axios.get(`${API_BASE_URL}/api/contact/showCustomer`, {
+        headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`
+        },
+        params
+      });
+
+      onApplyFilters(response.data.products || response.data);
 
       localStorage.setItem(
         "expenseFilters",
@@ -78,7 +98,7 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
         })
       );
     } catch (error) {
-      console.error("Error applying filters:", error.message);
+      setErrorMessage("Error applying filters.");
     }
   };
 
@@ -122,12 +142,13 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
           zIndex: 9999,
         },
         content: {
-          height: "50%", // Set the height here, e.g., 50%
-          margin: "auto", // Center the modal horizontally
+          height: "50%", 
+          margin: "auto",
         },
       }}
     >
       <div className="filter-modal">
+        {errorMessage && <p className="text-red-500">{errorMessage}</p>}
         <div className="flex flex-wrap">
           <Select
             isMulti
@@ -145,7 +166,6 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
             placeholder="Select Customer Entity"
             className="p-2 w-full md:w-1/4 rounded border border-gray-300 focus:outline-none focus:border-blue-500 ml-2 m-2"
           />
-
           <Select
             isMulti
             options={cityOptions}

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import API_BASE_URL from "../../config";
 import axios from "axios";
+import { AuthContext } from "../../context/AuthContext";
 
 const EditCustomer = () => {
   const initialInputs = {
@@ -14,6 +15,7 @@ const EditCustomer = () => {
     website:""
   };
 
+  const { currentUser } = useContext(AuthContext);
   const { id } = useParams();
   const [inputs, setInputs] = useState(initialInputs);
   const [err, setError] = useState(null);
@@ -32,7 +34,13 @@ const EditCustomer = () => {
   useEffect(() => {
     const fetchSeller = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/Contact/showOneCustomer/${id}`);
+        const response = await axios.get(`${API_BASE_URL}/api/Contact/showOneCustomer/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            }
+          }
+        );
         const sellerData = response.data[0];
         console.log("Seller data:", sellerData); // Debugging
         if (sellerData) {
@@ -63,16 +71,24 @@ const EditCustomer = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${API_BASE_URL}/api/Contact/editCustomer/${id}`, inputs);
+      await axios.put(
+        `${API_BASE_URL}/api/Contact/editCustomer/${id}`,
+        inputs, // Send the form data as the second argument
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          },
+        }
+      );
       setInputs(initialInputs);
       toast.success("Updated successfully");
-      //window.location.reload();
-      navigate('/Customer')
+      navigate('/Customer');
     } catch (err) {
       console.error(err);
       toast.error("Failed to update seller");
     }
   };
+  
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

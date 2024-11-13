@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import API_BASE_URL from "../../config";
 import "./style.css";
 import { CiFilter } from "react-icons/ci";
@@ -7,6 +7,7 @@ import FilterModal from "./filterModal.jsx";
 import axios from "axios";
 import { Tab, Tabs, TabList, TabPanel } from "react-tabs";
 import "react-tabs/style/react-tabs.css";
+import { AuthContext } from "../../context/AuthContext.jsx";
 
 const Main = () => {
   const [alerts, setAlerts] = useState([]);
@@ -17,7 +18,7 @@ const Main = () => {
     status: "",
   });
   const [selectedTabIndex, setSelectedTabIndex] = useState(0);
-
+  const { currentUser } = useContext(AuthContext);
   useEffect(() => {
     const savedTabIndex = localStorage.getItem("selectedTabIndex");
     if (savedTabIndex !== null) {
@@ -29,7 +30,12 @@ const Main = () => {
     const fetchAlerts = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/opportunity/sendAlert`
+          `${API_BASE_URL}/api/opportunity/sendAlert`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`,
+            }
+          }
         );
         setAlerts(response.data.products);
         setFilteredUsers(response.data.products);
@@ -47,6 +53,7 @@ const Main = () => {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${currentUser.accessToken}`
         },
         body: JSON.stringify({ id }),
       });

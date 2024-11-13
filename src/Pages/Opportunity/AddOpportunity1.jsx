@@ -37,7 +37,14 @@ const AddOpportunity = () => {
   useEffect(() => {
     const fetchCustomerEntities = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/Contact/customerentity`);
+        const response = await axios.get(
+          `${API_BASE_URL}/api/Contact/customerentity`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            }
+          }
+        );
         setCustomerEntities(response.data);
       } catch (error) {
         console.error("Error fetching customer entities:", error);
@@ -46,7 +53,13 @@ const AddOpportunity = () => {
 
     const fetchTypeOptions = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/Opportunity/product`);
+        const response = await axios.get(`${API_BASE_URL}/api/Opportunity/product`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            }
+          }
+        );
         setTypeOptions(response.data);
       } catch (error) {
         console.error("Error fetching type options:", error);
@@ -66,7 +79,13 @@ const AddOpportunity = () => {
 
   const fetchName = async (customerEntity) => {
     try {
-      const response = await axios.post(`${API_BASE_URL}/api/Opportunity/name`, { customer_entity: customerEntity });
+      const response = await axios.post(`${API_BASE_URL}/api/Opportunity/name`, { customer_entity: customerEntity },
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`
+          }
+        }
+      );
       setNameOptions(response.data);
     } catch (error) {
       console.error("Error fetching names:", error);
@@ -133,7 +152,13 @@ const AddOpportunity = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(`${API_BASE_URL}/api/Opportunity/addOpportunity`, inputs);
+      await axios.post(`${API_BASE_URL}/api/Opportunity/addOpportunity`, inputs,
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`
+          }
+        }
+      );
       setInputs(initialInputs);
       toast.success("Opportunity created successfully");
       navigate("/Opportunity");
@@ -196,6 +221,15 @@ const AddOpportunity = () => {
                       </option>
                     ))}
                   </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M14.707 7.293a1 1 0 00-1.414 0L10 10.586 6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 000-1.414z" />
+                    </svg>
+                  </div>
                 </div>
               </div>
 
@@ -266,25 +300,36 @@ const AddOpportunity = () => {
               </div>
 
               <div>
-                <label htmlFor="License_type" className="block text-sm font-medium text-gray-700">
-                  License Type
-                </label>
-                <div className="mt-1 relative">
-                  <select
-                    name="License_type"
-                    required
-                    onChange={handleChange}
-                    value={inputs.License_type}
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  >
-                    <option value="" disabled>
-                      Select License Type
-                    </option>
-                    <option value="New">New</option>
-                    <option value="Renewal">Renewal</option>
-                  </select>
-                </div>
-              </div>
+  <label htmlFor="License_type" className="block text-sm font-medium text-gray-700">
+    License Type
+  </label>
+  <div className="mt-1 relative">
+    <select
+      name="License_type"
+      required
+      onChange={handleChange}
+      value={inputs.License_type}
+      className="appearance-none block w-full px-3 py-2 pr-8 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+    >
+      <option value="" disabled>
+        Select License Type
+      </option>
+      <option value="New">New</option>
+      <option value="Renewal">Renewal</option>
+    </select>
+    {/* Dropdown arrow */}
+    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+      <svg
+        className="fill-current h-4 w-4"
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 20 20"
+      >
+        <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+      </svg>
+    </div>
+  </div>
+</div>
+
 
               <div>
                 <label htmlFor="value" className="block text-sm font-medium text-gray-700">

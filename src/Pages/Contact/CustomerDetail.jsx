@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { MdEdit, MdDelete } from "react-icons/md";
 import AddContact from "./AddContact";
 import axios from "axios";
@@ -11,6 +11,7 @@ import FilterModal from "./filterModalContact";
 import { CiFilter } from "react-icons/ci";
 import { IoMdAddCircle } from "react-icons/io";
 import OpportunityDetails from "./opportunityDetails";
+import { AuthContext } from "../../context/AuthContext";
 
 const CustomerDetail = () => {
   const [addContactIsOpen, setAddContactIsOpen] = useState(false);
@@ -73,6 +74,8 @@ const CustomerDetail = () => {
     name: "",
   };
 
+  const { currentUser } = useContext(AuthContext)
+
   const handleCiFilterClick = () => {
     setFilterModalIsOpen(true);
   };
@@ -81,11 +84,16 @@ const CustomerDetail = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/Contact/showContact/${customer_entity}`
+          `${API_BASE_URL}/api/Contact/showContact/${customer_entity}`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            }
+          }
         );
         setCustomers(response.data.products);
         setFilteredUsers(response.data.products);
-        console.log(response.data.products);
+        //console.log(response.data.products);
         setLoading(false); // Update loading state
       } catch (error) {
         console.error("Error fetching customer details:", error);

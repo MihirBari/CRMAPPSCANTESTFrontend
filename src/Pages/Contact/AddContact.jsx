@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { toast } from "react-toastify";
 import API_BASE_URL from "../../config";
 import axios from "axios";
 import Modal from "react-modal";
+import { AuthContext } from "../../context/AuthContext";
 
 const AddContact = ({ isOpen, onClose, customer_entity }) => {
   const initialInputs = {
@@ -58,11 +59,17 @@ const AddContact = ({ isOpen, onClose, customer_entity }) => {
     }));
   };
 
+  const { currentUser } = useContext(AuthContext);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       // Send data to backend
-      await axios.post(`${API_BASE_URL}/api/Contact/addContact`, inputs);
+      await axios.post(`${API_BASE_URL}/api/Contact/addContact`, inputs, {
+        headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        },
+      });
       setInputs(initialInputs);
       toast.success("Contact created successfully");
       onClose();
@@ -88,7 +95,7 @@ const AddContact = ({ isOpen, onClose, customer_entity }) => {
         },
         content: {
           height: "80%",
-          width: "30%",
+          width: "50%",
           margin: "auto",
         },
       }}
@@ -115,6 +122,7 @@ const AddContact = ({ isOpen, onClose, customer_entity }) => {
                       type="text"
                       name="customer_entity"
                       required
+                      readOnly
                       onChange={handleChange}
                       placeholder="Name Of Customer Entity"
                       className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
@@ -150,21 +158,29 @@ const AddContact = ({ isOpen, onClose, customer_entity }) => {
                         />
                       </div>
 
-                      <div>
+                      <div className="relative">
                         <select
                           name="designation"
                           required
                           onChange={(e) => handleChange(e, index)}
-                          value={contact.designation} // Set value attribute to contact.designation
-                          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-[40px]" // Increase height here
+                          value={contact.designation}
+                          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-[40px] pr-10" // Added pr-10 for padding
                         >
                           <option value="" disabled selected>
-                            Select Option
+                            Select Designation
                           </option>
                           <option value="CISO">CISO</option>
                           <option value="CTO">CTO</option>
-                          <option value="CIO">CIO</option>
                         </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                          <svg
+                            className="fill-current h-4 w-4"
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                          </svg>
+                        </div>
                       </div>
 
                       <div>
@@ -195,9 +211,9 @@ const AddContact = ({ isOpen, onClose, customer_entity }) => {
                 <button
                   type="button"
                   onClick={addContact}
-                  className="text-sm font-medium text-blue-600 hover:text-blue-500 focus:outline-none focus:underline"
+                  className="text-sm font-medium text-blue-600 "
                 >
-                  + Add Contact
+                  + Addct
                 </button>
               </div>
 

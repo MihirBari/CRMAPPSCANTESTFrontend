@@ -1,13 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import API_BASE_URL from "../../config";
+import { AuthContext } from "../../context/AuthContext";
 Modal.setAppElement("#root");
 const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters,customer_entity }) => {
   
   const [designation, setDesignation] = useState("");
   const [designations, setDesignations] = useState([]);
-
+  const { currentUser } = useContext(AuthContext)
   const [name, setName] = useState("");
   const [shouldApplyFilters, setShouldApplyFilters] = useState(false);
 
@@ -15,10 +16,13 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters,customer_en
     const fetchDesignation = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/contact/designation`
+          `${API_BASE_URL}/api/contact/designation`,
+          { headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`
+          }}
         );
         setDesignations(response.data);
-        console.log(response.data);
+       // console.log(response.data);
       } catch (error) {
         console.error("Error fetching product types:", error.message);
       }
@@ -37,6 +41,9 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters,customer_en
             designation,     
             name
           },
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`
+          }
         }
       );
 

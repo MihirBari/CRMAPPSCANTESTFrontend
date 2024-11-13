@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import "./orders.css";
 import DataTable from 'react-data-table-component';
 import { MdEdit, MdDelete } from "react-icons/md";
@@ -7,6 +7,7 @@ import axios from 'axios';
 import API_BASE_URL from "../../config";
 import { useNavigate } from 'react-router-dom';
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog.jsx";
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const Users = () => {
     const [users, setUsers] = useState([]);
@@ -17,19 +18,38 @@ const Users = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            try {
-                const response = await axios.get(`${API_BASE_URL}/api/user/userData`);
-                setUsers(response.data);
-                setFilteredUsers(response.data);
-            } catch (err) {
-                console.error('Error fetching users:', err);
-            }
-        };
+    const { currentUser } = useContext(AuthContext);
 
+    useEffect(() => {
+        const controller = new AbortController();
+        const signal = controller.signal;
+        const fetchUsers = async () => {
+          try {
+            const response = await axios.get(
+              `${API_BASE_URL}/api/user/userData`,
+              {
+                signal: signal,
+                headers: {
+                    Authorization: `Bearer ${currentUser.accessToken}`,
+                  }
+              }
+            );
+            setUsers(response.data);
+            setFilteredUsers(response.data);
+          } catch (err) {
+            if (axios.isCancel(err)) {
+              console.log("Request canceled", err.message);
+            } else {
+              console.error("Error fetching orders:", err);
+            }
+          }
+          return () => {
+            controller.abort(); // Cancel the request if the component unmounts
+          };
+        };
+    
         fetchUsers();
-    }, []);
+      }, []);
 
     const handleEditClick = (userId) => {
         navigate(`edit/${userId}`);
@@ -42,7 +62,11 @@ const Users = () => {
 
     const handleDeleteConfirmation = () => {
         if (deleteItemId) {
-            axios.delete(`${API_BASE_URL}/api/user/delete`, { data: { id: deleteItemId } })
+            axios.delete(`${API_BASE_URL}/api/user/delete`, { data: { id: deleteItemId },
+                  headers: {
+                    Authorization: `Bearer ${currentUser.accessToken}`,
+                  }
+            })
                 .then((response) => {
                     console.log("Delete successful. Deleted user ID:", deleteItemId);
                     setUsers(users.filter(user => user.id !== deleteItemId));
@@ -106,19 +130,10 @@ const Users = () => {
             sortable: true,
         },
         {
-            name: 'Created at',
-            selector: (row) => {
-              const date = new Date(row.created_at);
-              return date.toLocaleString('en-UK', {
-                year: 'numeric',
-                month: '2-digit',
-                day: '2-digit',
-                timeZone: 'IST',
-              });
-            },
+            name: 'Team',
+            selector: (row) => row.team,
             sortable: true,
-            width: '250px',
-          },
+        },
         {
             name: 'Edit',
             cell: (row) => (
@@ -167,7 +182,6 @@ const Users = () => {
                 className='dataTable'
                 columns={columns}
                 data={filteredUsers}
-                fixedHeaderScrollHeight='800px'
                 striped
                 pagination
                 paginationPerPage={20}

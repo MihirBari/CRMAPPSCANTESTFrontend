@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./orders.css";
 import DataTable, { createTheme } from "react-data-table-component";
 import API_BASE_URL from "../../config";
@@ -12,6 +12,7 @@ import { CiFilter } from "react-icons/ci";
 import FilterModal from "./FilterModal";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog";
 import { PiExportBold } from "react-icons/pi";
+import { AuthContext } from "../../context/AuthContext";
 
 const TableCustomer = () => {
   const [users, setUsers] = useState([]);
@@ -27,21 +28,27 @@ const TableCustomer = () => {
   });
   const tableRef = useRef(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
+ 
     const fetchOrders = async () => {
       try {
         const response = await axios.get(
           `${API_BASE_URL}/api/contact/showCustomer`,
           {
-            signal: signal,
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            },
+            signal
           }
-        );
+        );        
+        
         setUsers(response.data.products);
         setFilteredUsers(response.data.products);
-        console.log(response.data.products);
+       // console.log(response.data.products);
       } catch (err) {
         if (axios.isCancel(err)) {
           console.log("Request canceled", err.message);
@@ -65,6 +72,9 @@ const TableCustomer = () => {
     axios
       .delete(`${API_BASE_URL}/api/Contact/deleteCustomer`, {
         data: { id: itemId },
+        headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        }
       })
       .then((response) => {
         console.log("Delete successful:", response.data);
@@ -350,8 +360,7 @@ const TableCustomer = () => {
         striped
         theme="solarized"
         pagination
-        fixedHeader
-        fixedHeaderScrollHeight="350px"
+        
         highlightOnHover
         paginationPerPage={40}
         paginationRowsPerPageOptions={[ 40, 80, 120]}

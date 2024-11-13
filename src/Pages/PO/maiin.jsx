@@ -1,9 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import API_BASE_URL from "../../config";
 import "./style.css";
 import { CiFilter } from "react-icons/ci";
 import FilterModal from "./filterModal.jsx";
 import axios from "axios";
+import { AuthContext } from "../../context/AuthContext.jsx";
+import { GrRevert } from "react-icons/gr";
+import { FaCheck } from "react-icons/fa";
+import { RxCircleBackslash } from "react-icons/rx";
 
 const Main = () => {
   const [alerts, setAlerts] = useState([]);
@@ -15,21 +19,27 @@ const Main = () => {
   });
   const [popupAlerts, setPopupAlerts] = useState([]); // State for multiple popup alerts
 
+  const { currentUser } = useContext(AuthContext);
+
   useEffect(() => {
     const fetchAlerts = async () => {
       try {
-        const response = await fetch(`${API_BASE_URL}/api/Opportunity/sendPo`);
-        const data = await response.json();
-        setAlerts(data.products || []);
-        //console.log(data.products);
-        setFilteredUsers(data.products || []);
+        const response = await axios.get(
+          `${API_BASE_URL}/api/opportunity/sendPo`,
+          {headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          }
+        }
+        );
+        setAlerts(response.data.products);
+        setFilteredUsers(response.data.products);
       } catch (error) {
-        console.error("Error fetching alerts:", error);
+        console.error("Error fetching customer details:", error);
       }
     };
 
     fetchAlerts();
-  }, []);
+  }, [filters]);
 
   useEffect(() => {
     const checkForPopupAlerts = () => {
@@ -75,13 +85,80 @@ const Main = () => {
         alert_description,
         alert_type,
         License_type,
-      });
+      },
+      {headers: {
+        Authorization: `Bearer ${currentUser.accessToken}`,
+      }
+    }
+    );
       
       const { id } = response.data; // Assuming the backend returns an object with the id
   
       window.location.href = `/Opportunity/view/${id}`; // Redirect to the new URL
     } catch (error) {
       console.error("Error editing alert opportunity:", error);
+    }
+  };
+
+  const handleCorrectAlert = async (id) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/opportunity/editedPOopportunity`,
+        { id },
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+           console.log("Alert marked as correct.");
+           window.location.reload()
+      }
+    } catch (error) {
+      console.error("Error marking alert as correct:", error);
+    }
+  };
+
+  const handleVisibleAlert = async (id) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/opportunity/noShowPo`,
+        { id },
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+           console.log("Alert marked as correct.");
+           window.location.reload()
+      }
+    } catch (error) {
+      console.error("Error marking alert as correct:", error);
+    }
+  };
+  
+  // Function to handle "Revert" button click
+  const handleRevertAlert = async (id) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/opportunity/revertPO`,
+        { id },
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        console.log("Alert reverted successfully.");
+        window.location.reload()
+       
+      }
+    } catch (error) {
+      console.error("Error reverting alert:", error);
     }
   };
 
@@ -108,7 +185,8 @@ const Main = () => {
         <div className="alert-container">
           {Array.isArray(filteredUsers) && filteredUsers.length > 0 ? (
             filteredUsers.map((alert) => (
-              <div key={alert.id} className="alert-box">
+              <div key={alert.id} 
+              className={`alert-box ${alert.edited === "Yes" ? "bg-green-200" : ""}`}>
                 <h2>PO WON!!</h2>
                 <p
                 
@@ -123,7 +201,17 @@ const Main = () => {
                   PO of <b>{alert.alert_entity}</b> for{" "}
                   {alert.alert_description} in {alert.alert_type} {alert.License_type} was won
                 </p>
-                <div className="button-container"></div>
+                <div className="button-container">
+            
+  
+      <FaCheck onClick={() => handleCorrectAlert(alert.id)} />
+
+     <RxCircleBackslash onClick={() => handleVisibleAlert(alert.id)} />
+
+      {/* Revert Button */}
+      <GrRevert onClick={() => handleRevertAlert(alert.id)} />
+
+                </div>
               </div>
             ))
           ) : (

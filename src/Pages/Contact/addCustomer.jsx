@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API_BASE_URL from "../../config";
 import axios from "axios";
+import { AuthContext } from "../../context/AuthContext";
 
 const AddCustomer = () => {
   const initialInputs = {
@@ -27,6 +28,8 @@ const AddCustomer = () => {
   
   };
 
+  const { currentUser } = useContext(AuthContext);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Check if required fields are filled
@@ -40,7 +43,14 @@ const AddCustomer = () => {
 
     try {
       // Send data to backend
-      await axios.post(`${API_BASE_URL}/api/Contact/addCustomer`, inputs);
+      await axios.post(`${API_BASE_URL}/api/Contact/addCustomer`, 
+        inputs,
+        {
+        headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        }
+      }
+      );
       setInputs(initialInputs);
       toast.success("Customer created successfully");
       navigate("/Customer");

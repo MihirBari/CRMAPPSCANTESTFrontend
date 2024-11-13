@@ -32,6 +32,11 @@
     margin-top: 8px;
 }
 
+.bg-green-200 {
+    background-color: #7fea82; /* Light green background */
+  }
+  
+
 .alert-box button {
     padding: 8px 12px;
     border: none;

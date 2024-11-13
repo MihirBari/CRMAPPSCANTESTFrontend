@@ -1,8 +1,9 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Modal from "react-modal";
 import API_BASE_URL from "../../config";
 import Select from "react-select";
+import { AuthContext } from "../../context/AuthContext";
 Modal.setAppElement("#root");
 const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
   const [type, setType] = useState([]);
@@ -18,12 +19,20 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [shouldApplyFilters, setShouldApplyFilters] = useState(false);
+  const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
     const fetchTypeOptions = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/Opportunity/product`
+          `${API_BASE_URL}/api/Opportunity/product`,
+          { signal: signal,
+              headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+              }
+           }
         );
         setType(response.data);
       } catch (error) {
@@ -32,6 +41,10 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
     };
 
     fetchTypeOptions();
+
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const applyFilters = async () => {
@@ -50,6 +63,9 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
             startDate: dateFilterType === "between" ? startDate : null,
             endDate: dateFilterType === "between" ? endDate : null,
           },
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`
+            }
         }
       );
       onApplyFilters(response.data.products);

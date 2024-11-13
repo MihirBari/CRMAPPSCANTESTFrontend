@@ -30,7 +30,10 @@ const AddLeave = () => {
     const fetchHolidays = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/Holiday/holidays`
+          `${API_BASE_URL}/api/Holiday/holidays`,
+          { headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          }}
         );
         const formattedHolidays = response.data.map(
           (holiday) => holiday.date.split("T")[0]
@@ -102,7 +105,11 @@ const AddLeave = () => {
 
     try {
       // Send data to backend
-      await axios.post(`${API_BASE_URL}/api/Leave/addApplicationLeave`, inputs);
+      await axios.post(`${API_BASE_URL}/api/Leave/addApplicationLeave`, inputs,
+        { headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        }}
+      );
       setInputs(initialInputs);
       toast.success("Leave Applied successfully");
       navigate("/Leave");

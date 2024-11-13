@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import Box from '@mui/material/Box';
 import { DataGrid, GridActionsCellItem } from '@mui/x-data-grid';
@@ -12,6 +12,7 @@ import { CiFilter } from 'react-icons/ci';
 import ExportTable from './ExportTable';
 import { PiExportBold } from 'react-icons/pi';
 import { Edit } from '@mui/icons-material';
+import { AuthContext } from '../../context/AuthContext';
 
 const CustomerTable = () => {
   const [rows, setRows] = useState([]);
@@ -25,6 +26,8 @@ const CustomerTable = () => {
     customerentity: "",
   });
 
+  const { currentUser } = useContext(AuthContext);
+
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
@@ -33,6 +36,9 @@ const CustomerTable = () => {
         const response = await axios.get(
           `${API_BASE_URL}/api/contact/showCustomer`,
           {
+            headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          },
             signal: signal,
           }
         );
@@ -68,6 +74,7 @@ const CustomerTable = () => {
       data: { id: itemId },
       headers: {
         'Content-Type': 'application/json',
+          Authorization: `Bearer ${currentUser.accessToken}`,
       },
     })
       .then((response) => {

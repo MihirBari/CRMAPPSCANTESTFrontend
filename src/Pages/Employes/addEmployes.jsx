@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { toast } from "react-toastify";
 import API_BASE_URL from "../../config";
 import axios from "axios";
+import Select from "react-select";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../../context/AuthContext";
 
 const AddEmployes = () => {
   const initialInputs = {
     contacts: [], // Initialize contacts array for multiple contacts
   };
+
+  const { currentUser } = useContext(AuthContext);
 
   const navigate = useNavigate();
   const [inputs, setInputs] = useState(initialInputs);
@@ -32,7 +36,7 @@ const AddEmployes = () => {
       contacts: [
         ...prev.contacts,
         {
-          id:"",
+          id: "",
           name: "",
           surname: "",
           designation: "",
@@ -40,6 +44,7 @@ const AddEmployes = () => {
           last_date: "",
           status: "",
           DOB: "",
+          team: "",
           personal_email: "",
         },
       ],
@@ -58,8 +63,15 @@ const AddEmployes = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // Log the data to verify the team format before sending
+      console.log("Data being sent:", inputs);
+  
       // Send data to backend
-      await axios.post(`${API_BASE_URL}/api/Employes/addEmployes`, inputs);
+      await axios.post(`${API_BASE_URL}/api/Employes/addEmployes`, inputs,
+{headers: {
+  Authorization: `Bearer ${currentUser.accessToken}`,
+}}
+      );
       setInputs(initialInputs);
       toast.success("Contacts created successfully");
       navigate("/Employees");
@@ -70,9 +82,28 @@ const AddEmployes = () => {
     }
   };
 
+  const teamOptions = [
+    { value: "BigFix", label: "BigFix" },
+    { value: "SolarWinds", label: "SolarWinds" },
+    { value: "Tenable", label: "Tenable" },
+    { value: "Armis", label: "Armis" },
+  ];
+
   const handleClose = () => {
     setInputs(initialInputs);
     navigate("/Employees");
+  };
+
+  const handleMultiSelectChange = (selectedOptions, index) => {
+    const newContacts = [...inputs.contacts];
+    if (!newContacts[index]) {
+      newContacts[index] = {};
+    }
+    newContacts[index].team = selectedOptions.map((option) => option.value);
+    setInputs((prev) => ({
+      ...prev,
+      contacts: newContacts,
+    }));
   };
 
   return (
@@ -101,7 +132,7 @@ const AddEmployes = () => {
                     )}
                   </label>
                   <div className="grid grid-rows-3 gap-4">
-                  <div>
+                    <div>
                       <input
                         type="number"
                         name="id"
@@ -173,16 +204,16 @@ const AddEmployes = () => {
                       >
                         Last Date
                       </label>
-                    <div>
-                      <input
-                        type="Date"
-                        name="last_date"
-                        onChange={(e) => handleChange(e, index)}
-                        placeholder="Enter Last Date Of Employee"
-                        value={contact.last_date}
-                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-[40px]"
-                      />
-                    </div>
+                      <div>
+                        <input
+                          type="Date"
+                          name="last_date"
+                          onChange={(e) => handleChange(e, index)}
+                          placeholder="Enter Last Date Of Employee"
+                          value={contact.last_date}
+                          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-[40px]"
+                        />
+                      </div>
                     </div>
 
                     <div>
@@ -192,21 +223,21 @@ const AddEmployes = () => {
                       >
                         Employee Status
                       </label>
-                    <div>
-                      <select
-                        name="status"
-                        required
-                        onChange={(e) => handleChange(e, index)}
-                        value={contact.status} // Set value attribute to contact.designation
-                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-[40px]" // Increase height here
-                      >
-                        <option value="" disabled selected>
-                          Select Option
-                        </option>
-                        <option value="Active">Active</option>
-                        <option value="Inactive">Inactive</option>
-                      </select>
-                    </div>
+                      <div>
+                        <select
+                          name="status"
+                          required
+                          onChange={(e) => handleChange(e, index)}
+                          value={contact.status} // Set value attribute to contact.designation
+                          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-[40px]" // Increase height here
+                        >
+                          <option value="" disabled selected>
+                            Select Option
+                          </option>
+                          <option value="Active">Active</option>
+                          <option value="Inactive">Inactive</option>
+                        </select>
+                      </div>
                     </div>
 
                     <div>
@@ -216,17 +247,40 @@ const AddEmployes = () => {
                       >
                         Employee Date of Birth
                       </label>
+                      <div>
+                        <input
+                          type="Date"
+                          name="DOB"
+                          onChange={(e) => handleChange(e, index)}
+                          placeholder="Enter Date Of birth Of Employee"
+                          value={contact.DOB}
+                          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-[40px]"
+                        />
+                      </div>
+                    </div>
+
                     <div>
-                      <input
-                        type="Date"
-                        name="DOB"
-                        onChange={(e) => handleChange(e, index)}
-                        placeholder="Enter Date Of birth Of Employee"
-                        value={contact.DOB}
-                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-[40px]"
+                    <label
+                      htmlFor="team"
+                      className="block text-sm font-medium text-gray-700"
+                    >
+                      Team
+                    </label>
+                    <div className="mt-1">
+                      <Select
+                        isMulti
+                        name="team"
+                        options={teamOptions}
+                        onChange={(selectedOptions) =>
+                          handleMultiSelectChange(selectedOptions, index)
+                        }
+                        value={teamOptions.filter((option) =>
+                          contact.team.includes(option.value)
+                        )}
+                        classNamePrefix="react-select"
                       />
                     </div>
-                    </div>
+                  </div>
 
                     <div>
                       <label
@@ -235,16 +289,16 @@ const AddEmployes = () => {
                       >
                         Employee Personal Email
                       </label>
-                    <div>
-                      <input
-                        type="email"
-                        name="personal_email"
-                        onChange={(e) => handleChange(e, index)}
-                        placeholder="Enter Personal Email Of Employee"
-                        value={contact.personal_email}
-                        className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-[40px]"
-                      />
-                    </div>
+                      <div>
+                        <input
+                          type="email"
+                          name="personal_email"
+                          onChange={(e) => handleChange(e, index)}
+                          placeholder="Enter Personal Email Of Employee"
+                          value={contact.personal_email}
+                          className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm h-[40px]"
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>

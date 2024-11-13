@@ -30,14 +30,19 @@ const EditOpportunity = () => {
   const [typeOptions, setTypeOptions] = useState([]);
   const [err, setError] = useState(null);
 
+
   useEffect(() => {
     const fetchOrder = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/Opportunity/showOneOpportunity/${id}`
+          `${API_BASE_URL}/api/Opportunity/showOneOpportunity/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            }}
         );
         const orderData = response.data[0];
-        console.log("Fetched Order Data:", orderData);
+       // console.log("Fetched Order Data:", orderData);
   
         // Adjust the timezone offset and convert to yyyy-MM-dd format
         const formatDate = (dateString) => {
@@ -50,7 +55,12 @@ const EditOpportunity = () => {
   
         const fetchTypeOptions = async () => {
           try {
-            const response = await axios.get(`${API_BASE_URL}/api/Opportunity/product`);
+            const response = await axios.get(`${API_BASE_URL}/api/Opportunity/product`,
+              {
+                headers: {
+                  Authorization: `Bearer ${currentUser.accessToken}`
+                }}
+            );
             setTypeOptions(response.data);
           } catch (error) {
             console.error("Error fetching type options:", error);
@@ -102,10 +112,14 @@ const EditOpportunity = () => {
     try {
       const response = await axios.post(
         `${API_BASE_URL}/api/Opportunity/name`,
-        { customer_entity: customerEntity }
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            },
+          customer_entity: customerEntity }
       );
       setNameOptions(response.data);
-      console.log(response.data);
+      //console.log(response.data);
     } catch (error) {
       console.error("Error fetching names:", error);
     }
@@ -132,7 +146,12 @@ console.log("Current User Surname:", currentUser.surname);
           : null,
         user_name: currentUser.name, // Add currentUser.name here
         user_surname: currentUser.surname, // Add currentUser.surname here
-      });
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`
+        }}
+    );
   
       setInputs(initialInputs);
       navigate("/Opportunity");

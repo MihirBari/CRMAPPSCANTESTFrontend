@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import API_BASE_URL from "../../config";
 import axios from "axios";
+import { AuthContext } from "../../context/AuthContext";
 
 const EditUser = () => {
   const navigate = useNavigate();
@@ -17,13 +18,19 @@ const EditUser = () => {
 
   const [inputs, setInputs] = useState(initialInputs);
   const [err, setError] = useState(null);
+  const { currentUser } = useContext(AuthContext);
 
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/user/getOneUserData/${id}`);
+        const response = await axios.get(`${API_BASE_URL}/api/user/getOneUserData/${id}`,
+        {  headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          }
+        }
+        );
         const userData = response.data[0]; // Access the first element in the array
-        console.log("Fetched User Data:", userData);
+       // console.log("Fetched User Data:", userData);
   
         setInputs({
           name: userData.name,
@@ -52,7 +59,12 @@ const EditUser = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${API_BASE_URL}/api/user/editUser/${id}`, inputs);
+      await axios.put(`${API_BASE_URL}/api/user/editUser/${id}`, inputs,
+        {  headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        }
+      }
+      );
       setInputs(initialInputs);
       toast.success("User updated successfully");
       navigate("/user");
@@ -88,9 +100,10 @@ const EditUser = () => {
               </div>
               <div>
                 {renderSelect("role", "Role", [
-                    { value: "admin", name: "Admin" },
-                    { value: "moderator", name: "Moderator" },
-                    { value: "user", name: "user" },
+                    { value: "Admin", name: "Admin" },
+                    { value: "Moderator", name: "Moderator" },
+                    { value: "User", name: "User" },
+                    { value: "RO-User", name: "RO-User" },
                   ])}
               </div>
             </div>
@@ -152,6 +165,15 @@ const EditUser = () => {
               </option>
             ))}
           </select>
+          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                    </svg>
+                  </div>
         </div>
       </>
     );

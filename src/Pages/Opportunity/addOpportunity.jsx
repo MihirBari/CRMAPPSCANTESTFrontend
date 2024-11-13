@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import API_BASE_URL from "../../config";
 import axios from "axios";
 import Select from "react-select";
+import { AuthContext } from "../../context/AuthContext";
 
 const AddOpportunity = () => {
   const initialInputs = {
@@ -27,11 +28,19 @@ const AddOpportunity = () => {
   const [err, setError] = useState(null);
   const navigate = useNavigate();
 
+  const { currentUser } = useContext(AuthContext);
+
+
   useEffect(() => {
     const fetchCustomerEntities = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/Contact/customerentity`
+          `${API_BASE_URL}/api/Contact/customerentity`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`
+            }
+          }
         );
         setCustomerEntities(response.data);
       } catch (error) {
@@ -97,10 +106,12 @@ const AddOpportunity = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post(
-        `${API_BASE_URL}/api/Opportunity/addOpportunity`,
-        inputs
-      );
+      // Send data to backend
+      await axios.post(`${API_BASE_URL}/api/Contact/addContact`, inputs, {
+        headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        },
+      });
       setInputs(initialInputs);
       toast.success("Opportunity created successfully");
       navigate("/Opportunity");
@@ -171,6 +182,15 @@ const AddOpportunity = () => {
                       </option>
                     ))}
                   </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M14.707 7.293a1 1 0 00-1.414 0L10 10.586 6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 000-1.414z" />
+                    </svg>
+                  </div>
                 </div>
               </div>
 

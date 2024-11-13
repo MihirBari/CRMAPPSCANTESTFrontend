@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import "./orders.css";
 import DataTable, { createTheme } from "react-data-table-component";
 import API_BASE_URL from "../../config";
@@ -11,6 +11,7 @@ import ExportTable from "./ExportTable";
 import DeleteConfirmationDialog from "./DeleteConfirmationDialog.jsx";
 import { PiExportBold } from "react-icons/pi";
 import { CiFilter } from "react-icons/ci";
+import { AuthContext } from "../../context/AuthContext.jsx";
 
 const TableEmploye = () => {
   const [users, setUsers] = useState([]);
@@ -27,6 +28,8 @@ const TableEmploye = () => {
     name: "",
     surname: ""
   });
+
+  const { currentUser } = useContext(AuthContext);
 
   const handleCiFilterClick = () => {
     setFilterModalIsOpen(true);
@@ -45,6 +48,7 @@ const TableEmploye = () => {
       data: { name: deleteItemId.name, surname: deleteItemId.surname },
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${currentUser.accessToken}`,
       },
     })
       .then((response) => {
@@ -71,6 +75,9 @@ const TableEmploye = () => {
           {
             params: filters,
             signal: signal,
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`,
+            }
           }
         );
         setUsers(response.data.products);
@@ -127,8 +134,41 @@ const TableEmploye = () => {
       width: "150px",
     },
     {
-      name: "designation",
-      selector: (row) => row.designation,
+      name: "Designation",
+      cell: (row) => (
+        <span
+          className="view-link"
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start",
+          }}
+        >
+          {row.designation}
+        </span>
+      ),
+      sortable: true,
+      width: "150px",
+    },
+    {
+      name: "Team",
+      cell: (row) => (
+        <span
+          className="view-link"
+          style={{
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "flex-start",
+          }}
+        >
+          {row.team}
+        </span>
+      ),
+    
       sortable: true,
       width: "150px",
     },
@@ -363,7 +403,7 @@ const customPaginationComponentOptions = {
        columns={modifiedColumns}
        data={filteredUsers}
        customStyles={customStyles}
-       fixedHeaderScrollHeight="800px"
+       
        striped
        theme="solarized"
        pagination

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import API_BASE_URL from "../../config";
 import Select from "react-select";
+import { AuthContext } from "../../context/AuthContext";
 
 Modal.setAppElement("#root");
 
@@ -13,12 +14,19 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
   const [type, setType] = useState([]);
 
   const [shouldApplyFilters, setShouldApplyFilters] = useState(false);
-
+  const { currentUser } = useContext(AuthContext);
   useEffect(() => {
+    const controller = new AbortController();
+    const signal = controller.signal;
     const fetchCustomerEntity = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/opportunity/customerPOEntityAlert`
+          `${API_BASE_URL}/api/opportunity/customerPOEntityAlert`,
+          { signal: signal,
+              headers: {
+                Authorization: `Bearer ${currentUser.accessToken}`,
+              }
+            }
         );
         setCustomerEntitys(response.data);
         //console.log("Entity:", response.data);
@@ -28,6 +36,9 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
     };
 
     fetchCustomerEntity();
+    return () => {
+      controller.abort();
+    };
   }, []);
 
   const applyFilters = async () => {
@@ -40,6 +51,9 @@ const FilterModal = ({ isOpen, onClose, onApplyFilters, resetFilters }) => {
             type: type ? type.map((t) => t.value) : [],
             licenseType: licenseType ? licenseType.map((l) => l.value) : [],
           },
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          }
         }
       );
   

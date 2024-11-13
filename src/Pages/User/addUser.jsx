@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { toast } from "react-toastify";
 import API_BASE_URL from "../../config";
 import axios from "axios";
+import { AuthContext } from "../../context/AuthContext";
 
 const AddUser = () => {
   const navigate = useNavigate();
@@ -14,7 +15,7 @@ const AddUser = () => {
     password: "",
     role: "user"
   };
-
+  const { currentUser } = useContext(AuthContext);
   const [inputs, setInputs] = useState(initialInputs);
   const [err, setError] = useState(null);
 
@@ -37,7 +38,12 @@ const AddUser = () => {
   
     try {
       // Send data to backend
-      await axios.post(`${API_BASE_URL}/api/user/addUser`, inputs);
+      await axios.post(`${API_BASE_URL}/api/user/addUser`, inputs,
+        {  headers: {
+          Authorization: `Bearer ${currentUser.accessToken}`,
+        }
+      }
+      );
       setInputs(initialInputs);
       toast.success("User created successfully");
       navigate("/user");

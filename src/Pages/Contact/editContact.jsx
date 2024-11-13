@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import API_BASE_URL from "../../config";
 import axios from "axios";
 import Modal from "react-modal";
+import { AuthContext } from "../../context/AuthContext";
 
 Modal.setAppElement("#root");
 const EditContact = ({ isOpen, onClose,customerId  }) => {
@@ -13,7 +14,7 @@ const EditContact = ({ isOpen, onClose,customerId  }) => {
     phone:"",
     email:"",
   };
-
+  const { currentUser } = useContext(AuthContext);
   const [inputs, setInputs] = useState(initialInputs);
   const [err, setError] = useState(null);
 
@@ -30,7 +31,13 @@ const EditContact = ({ isOpen, onClose,customerId  }) => {
   useEffect(() => {
     const fetchSeller = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/api/Contact/showOneContact/${customerId}`);
+        const response = await axios.get(`${API_BASE_URL}/api/Contact/showOneContact/${customerId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${currentUser.accessToken}`,
+            },
+          }
+        );
         console.log(customerId)
         const sellerData = response.data[0];
      if (sellerData) {
@@ -60,7 +67,13 @@ const EditContact = ({ isOpen, onClose,customerId  }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.put(`${API_BASE_URL}/api/Contact/editContact/${customerId}`, inputs);
+      await axios.put(`${API_BASE_URL}/api/Contact/editContact/${customerId}`, inputs,
+        {
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          },
+        }
+      );
       setInputs(initialInputs);
       toast.success("Updated successfully");
       onClose()
@@ -85,7 +98,7 @@ const EditContact = ({ isOpen, onClose,customerId  }) => {
       },
       content: {
         height: "80%",
-        width:"30%",
+        width:"50%",
         margin: "auto",
       },
     }}
@@ -175,6 +188,15 @@ const EditContact = ({ isOpen, onClose,customerId  }) => {
               </option>
             ))}
           </select>
+           <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                    <svg
+                      className="fill-current h-4 w-4"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 011.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
+                    </svg>
+                  </div>
         </div>
       </>
     );

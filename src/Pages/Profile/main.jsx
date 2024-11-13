@@ -17,6 +17,9 @@ const Main = () => {
         const restDetailResponse = await axios.post(`${API_BASE_URL}/api/user/RestDetail`, {
           name: currentUser.name,
           surname: currentUser.surname,
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`,
+          }
         });
         setRestDetails(restDetailResponse.data);
 
@@ -58,7 +61,7 @@ const Main = () => {
           <h2 className="text-2xl font-semibold mb-4">User Information</h2>
           <p className="text-lg mb-2"><span className="font-bold">Name:</span> {currentUser.name} {currentUser.surname}</p>
           <p className="text-lg mb-2"><span className="font-bold">Email:</span> {currentUser.email}</p>
-          <p className="text-lg mb-2"><span className="font-bold">Role:</span> {currentUser.role}</p>
+          <p className="text-lg mb-2"><span className="font-bold">Team:</span> {currentUser.team}</p>
           {restDetails && (
             <>
               <p className="text-lg mb-2"><span className="font-bold">Designation:</span> {restDetails.designation}</p>

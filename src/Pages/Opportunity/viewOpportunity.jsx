@@ -1,18 +1,25 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import SideNavBar from '../Sidebar/Navbar';
 import OpportunityDetail from './OpportunityDetail';
 import axios from 'axios';
 import API_BASE_URL from '../../config';
 import { useParams } from 'react-router-dom';
+import { AuthContext } from '../../context/AuthContext';
 
 const ViewOpportunity = () => {
   const [products, setProducts] = useState([]);
   const { id } = useParams();
 
+  const { currentUser } = useContext(AuthContext);
+
   useEffect(() => {
     const fetchData = () => {
       axios
-        .get(`${API_BASE_URL}/api/Opportunity/showOneOpportunity/${id}`)
+        .get(`${API_BASE_URL}/api/Opportunity/showOneOpportunity/${id}`,{
+          headers: {
+            Authorization: `Bearer ${currentUser.accessToken}`
+          }
+        })
         .then((response) => {
           console.log('API Response:', response);
           const formattedProducts = response.data.map(product => ({
