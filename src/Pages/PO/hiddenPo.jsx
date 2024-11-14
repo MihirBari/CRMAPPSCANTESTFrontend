@@ -6,8 +6,6 @@ import FilterModal from "./filterModal.jsx";
 import axios from "axios";
 import { AuthContext } from "../../context/AuthContext.jsx";
 import { GrRevert } from "react-icons/gr";
-import { FaCheck } from "react-icons/fa";
-import { RxCircleBackslash } from "react-icons/rx";
 
 const Main = () => {
   const [alerts, setAlerts] = useState([]);
@@ -17,7 +15,6 @@ const Main = () => {
     designation: "",
     name: "",
   });
-  const [popupAlerts, setPopupAlerts] = useState([]); // State for multiple popup alerts
 
   const { currentUser } = useContext(AuthContext);
 
@@ -25,7 +22,7 @@ const Main = () => {
     const fetchAlerts = async () => {
       try {
         const response = await axios.get(
-          `${API_BASE_URL}/api/opportunity/sendPo`,
+          `${API_BASE_URL}/api/opportunity/showHiddenPo`,
           {
             headers: {
               Authorization: `Bearer ${currentUser.accessToken}`,
@@ -42,22 +39,7 @@ const Main = () => {
     fetchAlerts();
   }, [filters]);
 
-  useEffect(() => {
-    const checkForPopupAlerts = () => {
-      const alertsToPopup = alerts.filter(
-        (alert) => alert.daysLeft === 1 && alert.acknowledge === "Yes"
-      );
-      setPopupAlerts(alertsToPopup);
-    };
 
-    checkForPopupAlerts();
-  }, [alerts]);
-
-  const acknowledgePopupAlert = (id) => {
-    setPopupAlerts((prevPopupAlerts) =>
-      prevPopupAlerts.filter((alert) => alert.id !== id)
-    );
-  };
 
   const onApplyFilters = (filteredData) => {
     setFilteredUsers(filteredData);
@@ -104,51 +86,13 @@ const Main = () => {
     }
   };
 
-  const handleCorrectAlert = async (id) => {
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/opportunity/editedPOopportunity`,
-        { id },
-        {
-          headers: {
-            Authorization: `Bearer ${currentUser.accessToken}`,
-          },
-        }
-      );
-      if (response.status === 200) {
-        console.log("Alert marked as correct.");
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error("Error marking alert as correct:", error);
-    }
-  };
 
-  const handleVisibleAlert = async (id) => {
-    try {
-      const response = await axios.post(
-        `${API_BASE_URL}/api/opportunity/noShowPo`,
-        { id },
-        {
-          headers: {
-            Authorization: `Bearer ${currentUser.accessToken}`,
-          },
-        }
-      );
-      if (response.status === 200) {
-        console.log("Alert marked as correct.");
-        window.location.reload();
-      }
-    } catch (error) {
-      console.error("Error marking alert as correct:", error);
-    }
-  };
 
   // Function to handle "Revert" button click
   const handleRevertAlert = async (id) => {
     try {
       const response = await axios.post(
-        `${API_BASE_URL}/api/opportunity/revertPO`,
+        `${API_BASE_URL}/api/opportunity/revertToPO`,
         { id },
         {
           headers: {
@@ -210,20 +154,8 @@ const Main = () => {
                   {alert.License_type} was won
                 </p>
                 <div className="button-container">
-                  <FaCheck
-                    title="Bookmark"
-                    style={{ cursor: "pointer", marginRight: "10px" }}
-                    onClick={() => handleCorrectAlert(alert.id)}
-                  />
-
-                  <RxCircleBackslash
-                  title="Hide"
-                  style={{ cursor: "pointer", marginRight: "10px" }}
-                    onClick={() => handleVisibleAlert(alert.id)}
-                  />
-
                   <GrRevert 
-                  title="Revert"
+                  title="Show"
                   style={{ cursor: "pointer", marginRight: "10px" }}
                   onClick={() => handleRevertAlert(alert.id)} />
                 </div>
@@ -236,24 +168,6 @@ const Main = () => {
           )}
         </div>
       )}
-      {popupAlerts.map((alert) => (
-        <div key={alert.id} className="popup-alert">
-          <h2>PO WON</h2>
-          <p>
-            Opportunity for <b>{alert.alert_entity}</b> for{" "}
-            {alert.alert_description} in {alert.alert_type} has been won please
-            make required changes
-          </p>
-          <div className="button-container">
-            <button
-              className="po-received-button"
-              onClick={() => acknowledgePopupAlert(alert.id)}
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      ))}
     </div>
   );
 };
